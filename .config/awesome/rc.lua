@@ -141,14 +141,26 @@ mykeyboardlayout = awful.widget.keyboardlayout()
 mytextclock = wibox.widget.textclock()
 
 -- Initialize widget
+emptywidget = wibox.widget.textbox()
+
 memwidget = wibox.widget.textbox()
-vicious.register(memwidget, vicious.widgets.mem, " $1% RAM : $6MB swap | ")
+vicious.register(memwidget, vicious.widgets.mem, " RAM: $1% | SWAP: $6MB ")
 
 cpuwidget = wibox.widget.textbox()
-vicious.register(cpuwidget, vicious.widgets.cpu, " [ $1% ] CPU { $2 | $3 | $4 | $5 | $6 | $7 } ")
+vicious.register(cpuwidget, vicious.widgets.cpu, "$1% { $2 | $3 | $4 | $5 | $6 | $7 } ")
 
 mpdwidget = wibox.widget.textbox()
 vicious.register(mpdwidget, vicious.widgets.mpd, " ${Title} ")
+
+wifiwidget = wibox.widget.textbox()
+vicious.register(wifiwidget, vicious.widgets.wifi, "${ssid} - ${linp}% ", 15, "wlan0")
+
+oswidget  = wibox.widget.textbox()
+vicious.register(oswidget, vicious.widgets.os, " $3@$4 - $1 $2 ")
+
+thermalwidget  = wibox.widget.textbox()
+vicious.register(thermalwidget, vicious.widgets.thermal, "CPU: $1°C | ", 20, "thermal_zone0" )
+
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
@@ -213,7 +225,7 @@ awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
     -- Each screen has its own tag table.
-    awful.tag({ "00", "01", "10", "11" }, s, awful.layout.layouts[1])
+    awful.tag({ "001", "010", "011", "100", "101", "110", "111" }, s, awful.layout.layouts[1])
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
@@ -231,10 +243,22 @@ awful.screen.connect_for_each_screen(function(s)
     -- Create a tasklist widget
     s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, tasklist_buttons)
     
-
+    s.cpu = wibox.widget {
+            thermalwidget,
+            cpuwidget,
+            layout  = wibox.layout.align.horizontal
+    }
+    s.middle = wibox.widget 
+    {
+            oswidget,
+            s.cpu,
+            memwidget,
+            wifiwidget,
+            layout  = wibox.layout.flex.horizontal
+    }
 
     -- Create the wibox
-    s.mywibox = awful.wibar({ position="bottom",screen = s, shape=gears.shape.rounded_rect})
+    s.mywibox = awful.wibar({ position="bottom",screen = s, shape=gears.shape.octogon})
 
     -- Add widgets to the wibox
     s.mywibox:setup {
@@ -242,11 +266,9 @@ awful.screen.connect_for_each_screen(function(s)
         { -- Left widgets
             layout = wibox.layout.align.horizontal,
             s.mytaglist,
-            memwidget,
-            cpuwidget,
             s.mypromptbox,
         },
-        s.mytasklist, -- Middle widget
+        s.middle,
         { -- Right widgets
             layout = wibox.layout.align.horizontal,
             mytextclock,
