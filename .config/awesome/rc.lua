@@ -11,21 +11,17 @@ local naughty = require("naughty")
 local menubar = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
 -- Enable hotkeys help widget for VIM and other apps
--- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
-
 local vicious = require("vicious")
-
 -- Load Debian menu entries
 local debian = require("debian.menu")
 local has_fdo, freedesktop = pcall(require, "freedesktop")
 
--- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
 -- another config (This code will only ever execute for the fallback config)
 if awesome.startup_errors then
     naughty.notify({ preset = naughty.config.presets.critical,
-                     title = "Oops, there were errors during startup!",
+                     title = "Oops, you fucked up your config!",
                      text = awesome.startup_errors })
 end
 
@@ -36,7 +32,6 @@ do
         -- Make sure we don't go into an endless error loop
         if in_error then return end
         in_error = true
-
         naughty.notify({ preset = naughty.config.presets.critical,
                          title = "Oops, an error happened!",
                          text = tostring(err) })
@@ -46,19 +41,13 @@ end
 -- }}}
 
 -- {{{ Variable definitions
--- Themes define colours, icons, font and wallpapers.
 beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
 
--- This is used later as the default terminal and editor to run.
 terminal = "mate-terminal"
 editor = os.getenv("EDITOR") or "editor"
 editor_cmd = terminal .. " -e " .. editor
 
 -- Default modkey.
--- Usually, Mod4 is the key with a logo between Control and Alt.
--- If you do not like this or do not have such a key,
--- I suggest you to remap Mod4 to another key using xmodmap or other tools.
--- However, you can use another modifier like Mod1, but it may interact with others.
 modkey = "Mod4"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
@@ -98,7 +87,7 @@ end
 -- }}}
 
 -- {{{ Menu
--- Create a launcher widget and a main menu
+-- Create a  widget and a main menu
 myawesomemenu = {
    { "hotkeys", function() return false, hotkeys_popup.show_help end},
    { "manual", terminal .. " -e man awesome" },
@@ -144,22 +133,25 @@ mytextclock = wibox.widget.textclock()
 emptywidget = wibox.widget.textbox()
 
 memwidget = wibox.widget.textbox()
-vicious.register(memwidget, vicious.widgets.mem, " RAM: $1% | SWAP: $6MB ")
+vicious.register(memwidget, vicious.widgets.mem, "RAM: $1%  |  SWAP: $6MB", 6)
 
 cpuwidget = wibox.widget.textbox()
-vicious.register(cpuwidget, vicious.widgets.cpu, "$1% { $2 | $3 | $4 | $5 | $6 | $7 } ")
+vicious.register(cpuwidget, vicious.widgets.cpu, "$1% { $2 | $3 | $4 | $5 | $6 | $7 }", 3)
 
-mpdwidget = wibox.widget.textbox()
-vicious.register(mpdwidget, vicious.widgets.mpd, " ${Title} ")
+--mpdwidget = wibox.widget.textbox()
+--vicious.register(mpdwidget, vicious.widgets.mpd, " ${Title} ")
 
 wifiwidget = wibox.widget.textbox()
-vicious.register(wifiwidget, vicious.widgets.wifi, "${ssid} - ${linp}% ", 15, "wlan0")
+vicious.register(wifiwidget, vicious.widgets.wifi, "${ssid} - ${linp}%   ", 15, "wlan0")
 
 oswidget  = wibox.widget.textbox()
-vicious.register(oswidget, vicious.widgets.os, " $3@$4 - $1 $2 ")
+vicious.register(oswidget, vicious.widgets.os, "   $3@$4 - $1 $2         ", 300)
 
 thermalwidget  = wibox.widget.textbox()
 vicious.register(thermalwidget, vicious.widgets.thermal, "CPU: $1°C | ", 20, "thermal_zone0" )
+
+fswidget  = wibox.widget.textbox()
+vicious.register(fswidget, vicious.widgets.fs, "/  ${/ avail_gb}GB free     ~/  ${/home/odroid avail_gb}GB free", 360)
 
 
 -- Create a wibox for each screen and add it
@@ -248,34 +240,77 @@ awful.screen.connect_for_each_screen(function(s)
             cpuwidget,
             layout  = wibox.layout.align.horizontal
     }
-    s.middle = wibox.widget 
-    {
-            oswidget,
+    s.middle = wibox.widget {
+            fswidget,
             s.cpu,
             memwidget,
-            wifiwidget,
             layout  = wibox.layout.flex.horizontal
     }
 
     -- Create the wibox
-    s.mywibox = awful.wibar({ position="bottom",screen = s, shape=gears.shape.octogon})
-
-    -- Add widgets to the wibox
+    s.mywibox = wibox({ 
+    type = "dock", 
+    screen = s, 
+    shape=gears.shape.rounded_bar, 
+    ontop = true, 
+    x = 0, y= 0, 
+    width = 330, height = 24, 
+    visible = true,
+    border_width = 3,
+    border_color = "#555555"})
     s.mywibox:setup {
+        layout = wibox.layout.align.horizontal,
+        s.mytaglist,
+        s.mypromptbox,
+    }
+    
+    s.mywibox2 = wibox({ 
+        type = "dock", 
+        screen = s, 
+        shape=gears.shape.rounded_bar, 
+        ontop = true, 
+        x = 390, y = 0 , 
+        width = 1330, height = 24, 
+        visible = true,
+        border_width = 3,
+        border_color = "#555555"})
+    s.mywibox2:setup {
         layout = wibox.layout.align.horizontal,
         { -- Left widgets
             layout = wibox.layout.align.horizontal,
-            s.mytaglist,
-            s.mypromptbox,
+            oswidget
         },
         s.middle,
         { -- Right widgets
             layout = wibox.layout.align.horizontal,
+            wifiwidget,
+        },
+    }
+    
+    s.mywibox3 = wibox({ type = "dock", 
+        screen = s, 
+        shape=gears.shape.rounded_bar, 
+        ontop = true, 
+        x = 1780, y = 0,
+        width = 137, height = 24, 
+        visible = true,
+        border_width = 3,
+        border_color = "#555555"})
+    s.mywibox3:setup {
+        layout = wibox.layout.align.horizontal,
+        { -- Left widgets
+            layout = wibox.layout.align.horizontal,
             mytextclock,
+        },
+        empywidget,
+        { -- Right widgets
+            layout = wibox.layout.align.horizontal,
             s.mylayoutbox,
         },
     }
-   
+    
+    -- since using wiboxes instead of wibar must provide buffer for windows
+    s.mywibox:struts{ left = 0, right = 0, bottom = 0, top = 30 }
     
 end)
 -- }}}
@@ -517,12 +552,6 @@ awful.rules.rules = {
         class = {
           "Arandr",
           "Gpick",
-          "Kruler",
-          "MessageWin",  -- kalarm.
-          "Sxiv",
-          "Wpa_gui",
-          "pinentry",
-          "veromix",
           "xtightvncviewer"},
 
         name = {
@@ -538,8 +567,6 @@ awful.rules.rules = {
 --    { rule_any = {type = { "normal", "dialog" }
 --      }, properties = { titlebars_enabled = true }
 --    },
-
-
 -- }}}
 
 -- {{{ Signals
@@ -554,8 +581,15 @@ client.connect_signal("manage", function (c)
 
 	--gears.surface.apply_shape_bounding(c, gears.shape.parallelogram, w/1.019)
     c.shape = function(cr,w,h)
-        gears.shape.rounded_rect (cr, w, h, 40) --,w/1.04)
+        gears.shape.rounded_rect (cr, w, h, 30) --,w/1.04)
     end
+    
+    if c.name == "cava" then    
+        c.shape = function(cr,w,h)
+            gears.shape.circle(cr, w, h)
+        end
+    end 
+
 
     if awesome.startup and
       not c.size_hints.user_position
@@ -609,19 +643,19 @@ end)
 
 -- Enable sloppy focus, so that focus follows mouse.
 client.connect_signal("mouse::enter", function(c)
-    --if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-    --    and awful.client.focus.filter(c) then
-    --    client.focus = c
-    --end
+    if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
+        and awful.client.focus.filter(c) then
+        client.focus = c
+    end
 end)
 
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus
-    --    if c.name ~= "cava" then 
-    --        c.shape = function(cr,w,h)
-    --            gears.shape.rounded_rect(cr,w,h ,16)
-    --            c.opacity = 1
-    --    end
-    --end
+    if c.name == "cava" then    
+        c.shape = function(cr,w,h)
+            gears.shape.circle(cr, w, h)
+            c.opacity = 0.5
+        end
+    end 
 end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal
     --if c.name ~= "cava" then    
@@ -629,10 +663,11 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
     --        gears.shape.rounded_rect(cr,w,h, 40)
     --    end  
     --end
-    --if c.name == "cava" then    
-    --    c.shape = function(cr,w,h)
-     --       gears.shape.circle(cr,w,h)
-    --    end
-    --end 
+    if c.name == "cava" then    
+        c.shape = function(cr,w,h)
+            gears.shape.circle(cr, w, h)
+            c.opacity = 0.5
+        end
+    end 
 end)
 -- }}}
