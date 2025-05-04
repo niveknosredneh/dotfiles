@@ -1,1 +1,119 @@
+/* ---- 💫 https://github.com/JaKooLit 💫 ---- */
 
+// ### DEFAULT - Top ### //
+{
+"include": [
+  "$HOME/.config/waybar/Modules",
+  "$HOME/.config/waybar/ModulesWorkspaces",
+  "$HOME/.config/waybar/ModulesCustom",
+  "$HOME/.config/waybar/ModulesGroups",
+  "$HOME/.config/waybar/UserModules",
+  ],
+"layer": "top",
+//"mode": "dock",
+"exclusive": true,
+"passthrough": false,
+"position": "right",
+"spacing": 0,
+"fixed-center": true,
+"ipc": true,
+"margin-top": 0,
+"margin-left": 0,
+"margin-right": 0,
+
+"modules-left": [
+	//"group/app_drawer",
+	"custom/menu",
+	//"custom/light_dark",
+	"custom/file_manager",
+	"custom/tty",
+	"custom/kcalc",
+	"custom/settings",
+	"custom/separator#blank",
+	"hyprland/workspaces#roman",
+	"custom/bitcoin",	
+	"custom/cardano",		
+	],
+
+"modules-center": [
+	//"hyprland/workspaces#4",
+	//"custom/separator#dot-line",
+	//"custom/weather",
+	//"custom/cava_mviz",
+	"wlr/taskbar",
+	"custom/playerctl",
+	],
+
+"modules-right": [
+	//"custom/hint",	
+	"custom/separator#blank",
+	//"network#speed",
+	//"custom/separator#dot-line",
+	//"group/mobo_drawer",
+	//"custom/separator#line",  
+	"pulseaudio",
+	"tray",
+	"clock#5",
+	//"group/status",
+	//"group/notify",
+	"custom/power"
+	],
+	
+"custom/playerctl": {	
+	"rotate" : 270,
+	"max-length": 30,
+	},
+
+"mpris": {
+	"rotate" : 270
+	},
+
+"custom/cava_mviz": {	
+	"rotate": 270,
+	"bars": 18,
+	"monstercat": true,
+	"waves": true,
+	},
+	
+"hyprland/workspaces#rw": {
+	//"format-window-separator": "",
+	//"active-only" : true,
+	"icon-size" : 25,
+	},
+
+"wlr/taskbar": {
+	"all-outputs" : true,
+	"orientation" : "vertical",
+	"format" : "{icon}", 
+	"icon-size" : 27,
+	},
+	
+"clock": {
+	//"rotate" : 270,
+	"format": "{:%H:%M}",
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+
+	},
+
+"clock#5": {
+    //"format": "{:%A, %I:%M %P}", // AM PM format
+    "format": "{:%b%d\n%H:%M}", // 24H
+    "format-alt": "{calendar}",
+    "tooltip": true,    
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+},
+
+"custom/bitcoin": {
+    "exec": "bash -c 'curl -s https://api.coingecko.com/api/v3/simple/price?ids=bitcoin\\&vs_currencies=usd | jq -r \".bitcoin.usd\"'",
+    "interval": 150,
+
+},
+
+"custom/cardano": {
+    
+    "exec": "bash -c 'curl -s https://api.coingecko.com/api/v3/simple/price?ids=cardano\\&vs_currencies=usd | jq -r \".cardano.usd\" | cut -b 1-5'",
+    "interval": 150,
+}
+
+
+}
